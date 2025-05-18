@@ -2,11 +2,15 @@ import { WebSocketServer } from "ws";
 import { handleLogin } from "./login.js";
 import { GameCommands } from "./commands.js";
 import { CommandHandler } from "./types.js";
-import { handleCreateRoom } from "./room.js";
+import { handleAddUserToRoom, handleCreateRoom } from "./room.js";
+import { handleAddShips } from "./ships.js";
+import { sockets } from "./ws-players.js";
 
 const commandHandlers: Partial<Record<GameCommands, CommandHandler>> = {
   [GameCommands.REG]: handleLogin,
   [GameCommands.CREATE_ROOM]: handleCreateRoom,
+  [GameCommands.ADD_USER_TO_ROOM]: handleAddUserToRoom,
+  [GameCommands.ADD_SHIPS]: handleAddShips,
 };
 
 let playerCounter = 0;
@@ -16,7 +20,8 @@ export const getWsServerStarted = () => {
 
   wss.on("connection", (ws) => {
     const playerId = ++playerCounter;
-    console.log(`Player ${playerId} joined`);
+    sockets[playerId] = ws;
+    console.log(`Player${playerId} joined`);
 
     ws.on("message", (message) => {
       console.log("Command:", message.toString());
@@ -25,12 +30,13 @@ export const getWsServerStarted = () => {
         const handler = commandHandlers[parsedMessage.type as GameCommands];
         handler?.({ ws, message: parsedMessage, playerId });
       } catch (err) {
-        console.error("Invalid JSON:", message.toString());
+        console.log(err);
       }
     });
 
     ws.on("close", () => {
-      console.log("Players left");
+      console.log(`Player${playerId} left`);
+      delete sockets[playerId];
     });
 
     ws.on("error", (err) => {

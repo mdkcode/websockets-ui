@@ -1,8 +1,8 @@
 import { CommandRequest } from "./types.js";
 import { GameCommands } from "./commands.js";
+import { sockets } from "./ws-players.js";
 
-let games = 0;
-const rooms: {
+export const rooms: {
   roomId: number | string;
   roomUsers: {
     name: string;
@@ -15,7 +15,7 @@ export const handleCreateRoom = ({ ws, playerId }: CommandRequest) => {
     roomId: playerId,
     roomUsers: [
       {
-        name: playerId.toString(),
+        name: `player${playerId}`,
         index: playerId,
       },
     ],
@@ -29,30 +29,31 @@ export const handleCreateRoom = ({ ws, playerId }: CommandRequest) => {
   );
 };
 
-export const handleAddUserToRoom = ({
-  ws,
-  message,
-  playerId,
-}: CommandRequest) => {
+export const handleAddUserToRoom = ({ message, playerId }: CommandRequest) => {
   const { indexRoom } = JSON.parse(message.data);
-  rooms.push({
-    roomId: playerId,
-    roomUsers: [
-      {
-        name: playerId.toString(),
-        index: playerId,
-      },
-    ],
-  });
-  rooms.splice(indexRoom, 1);
-  ws.send(
-    JSON.stringify({
-      type: GameCommands.CREATE_GAME,
-      id: 0,
-      data: JSON.stringify({
-        idGame: ++games,
-        idPlayer: playerId,
-      }),
-    })
-  );
+  const room = rooms.find((r) => r.roomId === indexRoom);
+
+  if (room) {
+    room.roomUsers.push({
+      name: playerId.toString(),
+      index: playerId,
+    });
+
+    if (room.roomUsers.length >= 2) {
+      room.roomUsers.forEach(({ index }) => {
+        const socket = sockets[+index];
+        socket.send(
+          JSON.stringify({
+            type: GameCommands.CREATE_GAME,
+            id: 0,
+            data: JSON.stringify({
+              idGame: indexRoom,
+              idPlayer: index,
+            }),
+          })
+        );
+      });
+      rooms.splice(indexRoom, 1);
+    }
+  }
 };
