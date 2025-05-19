@@ -18,10 +18,8 @@ export const handleTurn = (gameId: string | number) => {
       currentPlayer,
     }),
   });
-  for (const playerId of Object.keys(game.players)) {
-    const ws = sockets[+playerId];
-    if (ws?.readyState === ws.OPEN) {
-      ws.send(message);
-    }
+  const ws = sockets[+currentPlayer!];
+  if (ws?.readyState === ws.OPEN) {
+    ws.send(message);
   }
 };
