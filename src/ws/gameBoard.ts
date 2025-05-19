@@ -1,9 +1,9 @@
 import { Ship } from "./types.js";
 
-export const gameBoard: {
-  [gameId: string]: {
-    players: {
-      [playerId: string]: Ship[];
-    };
-  };
-} = {};
+export const gameBoard: Record<
+  string,
+  {
+    players: Record<string, Ship[]>;
+    currentTurn?: string | number;
+  }
+> = {};

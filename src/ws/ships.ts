@@ -1,4 +1,5 @@
 import { GameCommands } from "./commands.js";
+import { handleTurn } from "./game.js";
 import { gameBoard } from "./gameBoard.js";
 import { CommandRequest, Ship } from "./types.js";
 import { sockets } from "./ws-players.js";
@@ -11,6 +12,8 @@ export const handleAddShips = ({ message }: CommandRequest) => {
   }
   gameBoard[key].players[indexPlayer] = ships as Ship[];
   if (Object.keys(gameBoard[key].players).length === 2) {
+    const [firstPlayerId] = Object.keys(gameBoard[key].players);
+    gameBoard[key].currentTurn = +firstPlayerId;
     for (const [playerId, ships] of Object.entries(gameBoard[key].players)) {
       const socket = sockets[+playerId];
       socket.send(
@@ -28,4 +31,6 @@ export const handleAddShips = ({ message }: CommandRequest) => {
       );
     }
   }
+
+  handleTurn(gameId);
 };
