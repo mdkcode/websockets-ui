@@ -5,12 +5,14 @@ import { CommandHandler } from "./types.js";
 import { handleAddUserToRoom, handleCreateRoom } from "./room.js";
 import { handleAddShips } from "./ships.js";
 import { sockets } from "./ws-players.js";
+import { handleAttack } from "./game.js";
 
 const commandHandlers: Partial<Record<GameCommands, CommandHandler>> = {
   [GameCommands.REG]: handleLogin,
   [GameCommands.CREATE_ROOM]: handleCreateRoom,
   [GameCommands.ADD_USER_TO_ROOM]: handleAddUserToRoom,
   [GameCommands.ADD_SHIPS]: handleAddShips,
+  [GameCommands.ATTACK]: handleAttack,
 };
 
 let playerCounter = 0;

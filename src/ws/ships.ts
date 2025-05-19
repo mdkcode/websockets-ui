@@ -3,7 +3,7 @@ import { gameBoard } from "./gameBoard.js";
 import { CommandRequest, Ship } from "./types.js";
 import { sockets } from "./ws-players.js";
 
-export const handleAddShips = ({ ws, message }: CommandRequest) => {
+export const handleAddShips = ({ message }: CommandRequest) => {
   const { gameId, ships, indexPlayer } = JSON.parse(message.data);
   const key = gameId.toString();
   if (!gameBoard[key]) {
