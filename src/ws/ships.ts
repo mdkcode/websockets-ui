@@ -1,6 +1,7 @@
 import { GameCommands } from "./commands.js";
 import { gameBoard } from "./gameBoard.js";
 import { CommandRequest, Ship } from "./types.js";
+import { sockets } from "./ws-players.js";
 
 export const handleAddShips = ({ ws, message }: CommandRequest) => {
   const { gameId, ships, indexPlayer } = JSON.parse(message.data);
@@ -11,7 +12,8 @@ export const handleAddShips = ({ ws, message }: CommandRequest) => {
   gameBoard[key].players[indexPlayer] = ships as Ship[];
   if (Object.keys(gameBoard[key].players).length === 2) {
     for (const [playerId, ships] of Object.entries(gameBoard[key].players)) {
-      ws.send(
+      const socket = sockets[+playerId];
+      socket.send(
         JSON.stringify([
           {
             id: 0,
